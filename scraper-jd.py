@@ -493,14 +493,6 @@ class JDWrapper(object):
         good_data['stock'], good_data['stockName'] = self.good_stock(stock_id=stock_id, area_id=area_id)
         # stock_str = u'有货' if good_data['stock'] == 33 else u'无货'
 
-        print '+++++++++++++++++++++++++++++++++++++++++++++++++++++++'
-        print u'{0} > 商品详情'.format(time.ctime())
-        print u'编号：{0}'.format(good_data['id'])
-        print u'库存：{0}'.format(good_data['stockName'])
-        print u'价格：{0}'.format(good_data['price'])
-        print u'名称：{0}'.format(good_data['name'])
-        # print u'链接：{0}'.format(good_data['link'])
-
         return good_data
 
     def good_price(self, stock_id):
@@ -546,9 +538,8 @@ class JDWrapper(object):
         # failed
         link = good_data['link']
         if good_data['stock'] != 33 or link == '':
-            # print u'stock {0}, link {1}'.format(good_data['stock'], link)
+            print u'stock {0}, link {1}'.format(good_data['stock'], link)
             return False
-
         try:
             # change buy count
             if options.count != 1:
@@ -566,7 +557,13 @@ class JDWrapper(object):
             if tag is None or len(tag) == 0:
                 print u'添加到购物车失败'
                 return False
-
+            print '+++++++++++++++++++++++++++++++++++++++++++++++++++++++'
+            print u'{0} > 商品详情'.format(time.ctime())
+            print u'编号：{0}'.format(good_data['id'])
+            print u'库存：{0}'.format(good_data['stockName'])
+            print u'价格：{0}'.format(good_data['price'])
+            print u'名称：{0}'.format(good_data['name'])
+            print u'链接：{0}'.format(good_data['link'])
             print '+++++++++++++++++++++++++++++++++++++++++++++++++++++++'
             print u'{0} > 购买详情'.format(time.ctime())
             print u'链接：{0}'.format(link)
@@ -727,6 +724,7 @@ def main(options):
         return
 
     while not jd.buy(options) and options.flush:
+        print u'暂时无货，刷新中...'
         time.sleep(options.wait / 1000.0)
 
 
@@ -736,16 +734,16 @@ if __name__ == '__main__':
     parser.add_argument('-a', '--area',
                         help='Area string, like: 13_1000_4277_0 for Beijing', default='13_1000_4277_0')
     parser.add_argument('-g', '--good',
-                        help='Jing Dong good ID', default='1427733')
+                        help='Jing Dong good ID', default='10684738601')
     parser.add_argument('-c', '--count', type=int,
                         help='The count to buy', default=1)
     parser.add_argument('-w', '--wait',
-                        type=int, default=500,
+                        type=int, default=20000,
                         help='Flush time interval, unit MS')
     parser.add_argument('-f', '--flush',
                         action='store_true',
-                        help='Continue flash if good out of stock')
-    parser.add_argument('-s', '--submit',
+                        help='Continue flash if good out of stock',default=True)
+    parser.add_argument('-s', '--submit',default=False,
                         action='store_true',
                         help='Submit the order to Jing Dong')
 
