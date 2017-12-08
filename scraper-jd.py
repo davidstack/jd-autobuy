@@ -12,7 +12,6 @@ import requests
 import requests.packages.urllib3
 
 requests.packages.urllib3.disable_warnings()
-
 import os
 import time
 import json
@@ -20,7 +19,7 @@ import random
 
 import argparse
 # from selenium import webdriver
-
+from wangdk.jd.miaoshathread import MiaoShaThread
 
 import sys
 
@@ -519,9 +518,9 @@ class JDWrapper(object):
 
         return price
 
-    def buy(self, options):
+    def buy(self, options,stock_id):
         # stock detail
-        good_data = self.good_detail(options.good)
+        good_data = self.good_detail(stock_id)
 
         # retry until stock not empty
         if good_data['stock'] != 33:
@@ -529,7 +528,7 @@ class JDWrapper(object):
             while good_data['stock'] != 33 and options.flush:
                 print u'<%s> <%s>' % (good_data['stockName'], good_data['name'])
                 time.sleep(options.wait / 1000.0)
-                good_data['stock'], good_data['stockName'] = self.good_stock(stock_id=options.good,
+                good_data['stock'], good_data['stockName'] = self.good_stock(stock_id=stock_id,
                                                                              area_id=options.area)
 
             # retry detail
@@ -672,7 +671,7 @@ class JDWrapper(object):
 
             # just test, not real order
             if not submit:
-                return False
+                return True
 
             # order info
             payload = {
@@ -722,10 +721,13 @@ def main(options):
     jd = JDWrapper()
     if not jd.login_by_QR():
         return
-
-    while not jd.buy(options) and options.flush:
-        print u'暂时无货，刷新中...'
-        time.sleep(options.wait / 1000.0)
+    os.system('pause')
+    for stock_id in options.good:
+        thread1 = MiaoShaThread(stock_id,jd, options, stock_id)
+        thread1.start()
+    # while not jd.buy(options,stock_id) and options.flush:
+    #     print u'暂时无货，刷新中...'
+    #     time.sleep(options.wait / 1000.0)
 
 
 if __name__ == '__main__':
@@ -733,8 +735,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Simulate to login Jing Dong, and buy sepecified good')
     parser.add_argument('-a', '--area',
                         help='Area string, like: 13_1000_4277_0 for Beijing', default='13_1000_4277_0')
-    parser.add_argument('-g', '--good',
-                        help='Jing Dong good ID', default='10684738601')
+    parser.add_argument('-g', '--good',nargs='+',
+                        help='Jing Dong good ID')
     parser.add_argument('-c', '--count', type=int,
                         help='The count to buy', default=1)
     parser.add_argument('-w', '--wait',
@@ -753,10 +755,11 @@ if __name__ == '__main__':
 
     options = parser.parse_args()
     print options
-
+    options.good=['1026264962','1086499','5250512']
+    options.submit=False
     # for test
-    if options.good == '':
-        options.good = iphone_7
+    # if options.good == '':
+    #     options.good = iphone_7
 
     '''
 	if options.password == '' or options.username == '':
